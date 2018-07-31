@@ -12,7 +12,7 @@ namespace SDX_RMC
 		//システム
 		constexpr int 最大戦術数 = 8;
 		constexpr double 最大士気 = 100;
-		constexpr int 当たり判定サイズ = 16;
+		constexpr int 当たり判定サイズ = 32;
 		constexpr int 最大セーブ数 = 3;
 
 		constexpr double 雨士気低下 = 0.08;

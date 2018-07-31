@@ -60,8 +60,8 @@ namespace SDX_RMC
 			軍団[1].前進方向 = DirectionType::右;
 			軍団[0].後退方向 = DirectionType::右;
 			軍団[1].後退方向 = DirectionType::左;
-			軍団[0].前進正負 = 1;
-			軍団[1].前進正負 = -1;
+			軍団[0].前進正負 = -1;
+			軍団[1].前進正負 = 1;
 
 			//とりあえず30+1人ずつの軍団でテスト
 			for (int b = 0; b < 2; b++)
@@ -96,7 +96,7 @@ namespace SDX_RMC
 				for(auto& it:軍団[a].兵士)
 				{
 					it.向き = 軍団[a].前進方向;
-					it.攻撃補正 = 20;
+					it.攻撃補正 = 2;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
@@ -444,7 +444,7 @@ namespace SDX_RMC
 				{
 					if (it.戦闘状態 != UnitStateType::戦闘中) { continue; }
 
-					double 移動補正 = -1.0 + a*2.0;
+					double 移動補正 = 軍団[a].前進正負;
 					//天候効果
 					switch (天気)
 					{
@@ -482,9 +482,9 @@ namespace SDX_RMC
 						else if (位置差 < it.陣形位置差分) it.位置.x -= it.機動力 * 0.5;
 					}
 					//連戦補正計算
-					if (it.吹き飛び補正 < 1.0)
+					if (it.重量補正 < 1.0)
 					{
-						it.吹き飛び補正 += 0.01;
+						it.重量補正 += 0.01;
 					}
 					//モラル変化
 					it.士気 += it.士気変化;
@@ -557,25 +557,130 @@ namespace SDX_RMC
 				if (itA.戦闘状態 != UnitStateType::戦闘中) { continue; }
 				for (auto& itB : 軍団[1].兵士)
 				{
-					if (itB.戦闘状態 != UnitStateType::戦闘中) { continue; }
+					if (itB.戦闘状態 != UnitStateType::戦闘中 || itB.重量補正 == 0) { continue; }
 					double x差 = std::abs(itA.位置.x - itB.位置.x);
 					double y差 = std::abs(itA.位置.y - itB.位置.y);
 					if (itA.is巨大 || itB.is巨大){ y差 = 0;}
 
 					if (x差 < CV::当たり判定サイズ && y差 < CV::当たり判定サイズ )
 					{
-						FightUnit(itA, itB);
+						FightUnit( itA , itB );
+						break;
 					}
 				}
 			}
 		}
 
-		void FightUnit(UnitData& 兵士A,UnitData&兵士B)
+		void FightUnit(UnitData& 兵士A,UnitData& 兵士B)
 		{
-			//Aが0軍,Bが1軍
-			//とりあえず試作
-			if (兵士A.防御補正 <= 0) { 兵士A.吹き飛び量 -= 30; }
-			if (兵士B.防御補正 <= 0) { 兵士B.吹き飛び量 -= 30; }
+			UnitData* 兵士[2] = {&兵士A,&兵士B};
+			double 攻撃[2] = { 0, 0};//Aが0,Bが1
+			double 防御[2] = { 0, 0};
+			bool is戦闘[2] = {true,true};//敵に向いているかどうか
+			double 押し値[2];
+			double 重量値[2] = { 0,0 };
+
+			//攻撃防御計算
+			for (int a = 0; a < 2; a++)
+			{
+				//向きチェック
+				if (兵士[a]->向き == 軍団[a].後退方向)
+				{
+					is戦闘[a] = false;
+				}
+	
+				if( is戦闘[a] == true)
+				{
+					if (兵士[a]->攻撃補正 > 0)
+					{
+						攻撃[a] = 兵士[a]->攻撃力 + 兵士[a]->攻撃補正;
+						攻撃[a] += Rand::Get(兵士[a]->士気 / 20 + 1);
+					}
+					防御[a] = 兵士[a]->攻撃力 + 兵士[a]->防御補正;
+					防御[a] += Rand::Get(兵士[a]->士気 / 20 + 1);
+				} else {
+					防御[a] = Rand::Get(兵士[a]->士気 / 40 + 0.5);
+				}
+
+				//指揮官死亡デバフ
+				if (軍団[a].is指揮官生存 = false)
+				{
+					攻撃[a] -= 1; 
+					防御[a] -= 1;
+				}
+				//天気補正
+				if (天気継続時間 > 0 && 天気 == WeatherType::雨)
+				{
+					if(兵士[a]->雨耐性 <= 0)
+					{
+						攻撃[a] += 1;
+						防御[a] += 1;
+					}
+					if(兵士[a]->雨耐性 >= 2)
+					{
+						攻撃[a] -= 1;
+						防御[a] -= 1;
+					}
+				}
+				if (天気継続時間 > 0 && 天気 == WeatherType::雪 )
+				{
+					if (兵士[a]->雪耐性 <= 0)
+					{
+						攻撃[a] += 1;
+						防御[a] += 1;
+					}
+					if (兵士[a]->雪耐性 >= 2)
+					{
+						攻撃[a] -= 1;
+						防御[a] -= 1;
+					}
+				}
+			}
+			//ダメージ計算
+			for (int a = 0,b; a < 2; a++)
+			{
+				b = 1 - a;
+				if (攻撃[b] <= 0) { continue; };
+
+				double ダメージ量;
+
+				ダメージ量 = std::max( 0.0, 攻撃[b] - 防御[a]) + Rand::Get(1.0);
+				兵士[a]->蓄積ダメージ += ダメージ量;
+				重量値[b] += ダメージ量/10;
+
+				if (兵士[a]->蓄積ダメージ >= 1)
+				{
+					int ダメージ = int(兵士[a]->蓄積ダメージ);
+					兵士[a]->部隊数 -= ダメージ;
+					兵士[a]->蓄積ダメージ -= ダメージ;
+					AddDamageEffect(ダメージ, a, 兵士[a]->位置);
+				}
+
+			}
+			//吹き飛び計算
+			for (int a = 0; a < 2; a++)
+			{
+				押し値[a] = std::abs(兵士[a]->機動力 * 兵士[a]->移動速度);
+				重量値[a] += 兵士[a]->重量 + 兵士[a]->重量補正;
+				//防御中は重さ3倍判定
+				if (is戦闘[a] == true && 兵士[a]->防御補正 > 0)
+				{
+					重量値[a] *= 4;
+				}
+			}
+
+			for (int a = 0,b; a < 2; a++)
+			{
+				b = 1 - a;
+				//後ろ向きに吹き飛ぶ、80%は吹き飛び量に追加、20%は加算
+				兵士[a]->吹き飛び量 -= (押し値[a] * 19 + 押し値[b]) * 10 * 重量値[b] / (重量値[a]+重量値[b]);
+				兵士[a]->重量補正 = 0;
+			}
+		}
+
+		void AddDamageEffect(int ダメージ量,int 軍,Point& 座標)
+		{
+
 		}
 
 		void TacticsEffect()

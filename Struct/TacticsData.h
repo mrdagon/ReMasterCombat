@@ -77,7 +77,7 @@ namespace SDX_RMC
 
 			for (auto& it :軍団->兵士)
 			{
-				it.攻撃補正 = 20;
+				it.攻撃補正 = 2;
 				it.防御補正 = 0;
 				it.向き = 軍団->前進方向;
 				it.士気変化 = -0.05;
@@ -119,7 +119,7 @@ namespace SDX_RMC
 			for (auto& it : 軍団->兵士)
 			{
 				it.攻撃補正 = 0;
-				it.防御補正 = 40;
+				it.防御補正 = 4;
 				it.向き = 軍団->前進方向;
 				it.士気変化 = -0.01;
 				it.移動速度 = 0;
@@ -139,7 +139,7 @@ namespace SDX_RMC
 			//ぴょんぴょんはねる&戦術効果
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 30;
+				it.攻撃補正 = 3;
 				it.防御補正 = 0;
 				it.向き = 軍団->前進方向;
 				it.士気変化 = -0.05;
@@ -208,14 +208,14 @@ namespace SDX_RMC
 			{
 				if (it.現在列 == RowType::前列)
 				{
-					it.攻撃補正 = 30;
+					it.攻撃補正 = 3;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
 					it.フラッシュ色 = Color::Red;
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -238,12 +238,12 @@ namespace SDX_RMC
 				if (it.現在列 == RowType::前列)
 				{
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
 				} else {
-					it.攻撃補正 = 30;
+					it.攻撃補正 = 3;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
@@ -267,7 +267,7 @@ namespace SDX_RMC
 			{
 				if (it.現在列 == RowType::前列)
 				{
-					it.攻撃補正 = 30;
+					it.攻撃補正 = 3;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.75;
@@ -296,7 +296,7 @@ namespace SDX_RMC
 			{
 				if (it.現在列 == RowType::前列)
 				{
-					it.攻撃補正 = 40;
+					it.攻撃補正 = 4;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.25;
@@ -325,14 +325,14 @@ namespace SDX_RMC
 			{
 				if (it.位置.y <= 150)
 				{
-					it.攻撃補正 = 40;
+					it.攻撃補正 = 4;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
 					it.フラッシュ色 = Color::Red;
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 50;
+					it.防御補正 = 5;
 					it.士気変化 = -0.02;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -354,14 +354,14 @@ namespace SDX_RMC
 			{
 				if (it.位置.y >= 150)
 				{
-					it.攻撃補正 = 40;
+					it.攻撃補正 = 4;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
 					it.フラッシュ色 = Color::Red;
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 50;
+					it.防御補正 = 5;
 					it.士気変化 = -0.02;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -441,7 +441,7 @@ namespace SDX_RMC
 
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 5;
+				it.攻撃補正 = 1;
 				it.防御補正 = 0;
 				it.向き = 軍団->前進方向;
 				it.士気変化 = 0.04;
@@ -462,7 +462,7 @@ namespace SDX_RMC
 			for (auto& it : 軍団->兵士)
 			{
 				it.攻撃補正 = 0;
-				it.防御補正 = 20;
+				it.防御補正 = 2;
 				it.士気変化 = 0.05;
 				it.移動速度 = it.機動力  * -0.1;
 				it.向き = 軍団->前進方向;
@@ -484,7 +484,7 @@ namespace SDX_RMC
 				if (it.現在列 == RowType::前列)
 				{
 					it.攻撃補正 = 0;
-					it.防御補正 = 50;
+					it.防御補正 = 5;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -514,7 +514,7 @@ namespace SDX_RMC
 				if (it.現在列 == RowType::前列)
 				{
 					it.攻撃補正 = 0;
-					it.防御補正 = 50;
+					it.防御補正 = 5;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.向き = 軍団->前進方向;
@@ -545,7 +545,7 @@ namespace SDX_RMC
 				if (it.現在列 == RowType::前列)
 				{
 					it.攻撃補正 = 0;
-					it.防御補正 = 90;
+					it.防御補正 = 9;
 					it.士気変化 = -0.03;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -573,7 +573,7 @@ namespace SDX_RMC
 			for (auto& it : 軍団->兵士)
 			{
 				it.攻撃補正 = 0;
-				it.防御補正 = 60;
+				it.防御補正 = 6;
 				it.士気変化 = -0.03;
 				it.移動速度 = 0;
 				it.向き = 軍団->前進方向;
@@ -595,7 +595,7 @@ namespace SDX_RMC
 			{
 				if (it.現在列 == RowType::前列)
 				{
-					it.攻撃補正 = 30;
+					it.攻撃補正 = 3;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
@@ -606,7 +606,7 @@ namespace SDX_RMC
 					it.ジャンプ待ち = Rand::Get(10);
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -657,7 +657,7 @@ namespace SDX_RMC
 			{
 				if (it.現在列 == RowType::後列)
 				{
-					it.攻撃補正 = 30;
+					it.攻撃補正 = 3;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
@@ -668,7 +668,7 @@ namespace SDX_RMC
 					it.ジャンプ待ち = Rand::Get(10);
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -719,7 +719,7 @@ namespace SDX_RMC
 			{
 				if (it.位置.y <= 150)
 				{
-					it.攻撃補正 = 40;
+					it.攻撃補正 = 4;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
@@ -730,7 +730,7 @@ namespace SDX_RMC
 					it.ジャンプ待ち = Rand::Get(10);
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 50;
+					it.防御補正 = 5;
 					it.士気変化 = -0.02;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -781,7 +781,7 @@ namespace SDX_RMC
 			{
 				if (it.位置.y >= 150)
 				{
-					it.攻撃補正 = 40;
+					it.攻撃補正 = 4;
 					it.防御補正 = 0;
 					it.士気変化 = -0.07;
 					it.移動速度 = it.機動力  * 0.5;
@@ -792,7 +792,7 @@ namespace SDX_RMC
 					it.ジャンプ待ち = Rand::Get(10);
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 50;
+					it.防御補正 = 5;
 					it.士気変化 = -0.02;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -841,7 +841,7 @@ namespace SDX_RMC
 			{
 				if (it.is指揮官 == true)
 				{
-					it.攻撃補正 = 50;
+					it.攻撃補正 = 5;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.75;
@@ -851,7 +851,7 @@ namespace SDX_RMC
 					it.感情時間 = 80;
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = 0.04;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
@@ -889,7 +889,7 @@ namespace SDX_RMC
 					it.現在列 = RowType::後列;
 					it.フラッシュ色 = Color::Green;
 				} else {
-					it.攻撃補正 = 20;
+					it.攻撃補正 = 2;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = 0;
@@ -911,7 +911,7 @@ namespace SDX_RMC
 			{
 				if (it.現在列 == RowType::前列)
 				{
-					it.攻撃補正 = 30;
+					it.攻撃補正 = 3;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
@@ -946,12 +946,12 @@ namespace SDX_RMC
 				if (it.現在列 == RowType::前列)
 				{
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
 				} else {
-					it.攻撃補正 = 20;
+					it.攻撃補正 = 2;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
@@ -991,13 +991,13 @@ namespace SDX_RMC
 				if (it.現在列 == RowType::前列)
 				{
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
 					it.フラッシュ色 = Color::Blue;
 				}
 				else {
-					it.攻撃補正 = 20;
+					it.攻撃補正 = 2;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.75;
@@ -1062,7 +1062,7 @@ namespace SDX_RMC
 			//全軍前進
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 20;
+				it.攻撃補正 = 2;
 				it.防御補正 = 0;
 				it.向き = 軍団->前進方向;
 				it.士気変化 = -0.05;
@@ -1117,7 +1117,7 @@ namespace SDX_RMC
 			//全軍前進
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 20;
+				it.攻撃補正 = 2;
 				it.防御補正 = 0;
 				it.向き = 軍団->前進方向;
 				it.士気変化 = -0.05;
@@ -1273,7 +1273,7 @@ namespace SDX_RMC
 			//todo
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 30;
+				it.攻撃補正 = 3;
 				it.防御補正 = 0;
 				it.士気変化 = -0.05;
 				it.移動速度 = it.機動力  * 0.5;
@@ -1297,13 +1297,13 @@ namespace SDX_RMC
 				if (it.現在列 == RowType::前列 && count >= 2 && it.is指揮官 == false)
 				{
 					count = 0;
-					it.攻撃補正 = 40;
+					it.攻撃補正 = 4;
 					it.防御補正 = 0;
 					it.士気変化 = -0.05;
 					it.移動速度 = it.機動力  * 0.5;
 					it.自爆時間 = 300;
 				} else {
-					it.攻撃補正 = 40;
+					it.攻撃補正 = 4;
 					it.防御補正 = 0;
 					it.士気変化 = -0.01;
 					it.移動速度 = 0;
@@ -1353,7 +1353,7 @@ namespace SDX_RMC
 					it.向き = 軍団->後退方向;
 				} else {
 					it.攻撃補正 = 0;
-					it.防御補正 = 40;
+					it.防御補正 = 4;
 					it.士気変化 = -0.01;
 					it.移動速度 = it.機動力  * 0.5;
 					it.向き = 軍団->前進方向;
@@ -1405,7 +1405,7 @@ namespace SDX_RMC
 			//todo
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 40;
+				it.攻撃補正 = 4;
 				it.防御補正 = 0;
 				it.士気変化 = -0.05;
 				it.移動速度 = it.機動力  * 0.25;
@@ -1423,7 +1423,7 @@ namespace SDX_RMC
 			//todo
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 30;
+				it.攻撃補正 = 3;
 				it.防御補正 = 0;
 				it.士気変化 = -0.05;
 				it.移動速度 = it.機動力  * 0.9;
@@ -1510,7 +1510,7 @@ namespace SDX_RMC
 					it.部隊数 = 100;
 				}
 				it.士気 += 50;
-				it.攻撃補正 = 20;
+				it.攻撃補正 = 2;
 				it.防御補正 = 0;
 				it.士気変化 = -0.05;
 				it.移動速度 = it.機動力  * 0.5;
@@ -1532,9 +1532,9 @@ namespace SDX_RMC
 				it.蓄積ダメージ = 0;
 				it.部隊数 = 100;
 				it.士気 = 100;
-				it.攻撃力 += 30;
+				it.攻撃力 += 3;
 				it.戦闘状態 = UnitStateType::戦闘中;//死んでたら生き返る
-				it.攻撃補正 = 20;
+				it.攻撃補正 = 2;
 				it.防御補正 = 0;
 				it.士気変化 = -0.05;
 				it.移動速度 = it.機動力  * 0.5;
@@ -1579,7 +1579,7 @@ namespace SDX_RMC
 			//todo
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 50;
+				it.攻撃補正 = 5;
 				it.防御補正 = 0;
 				it.士気変化 = -0.05;
 				it.移動速度 = it.機動力  * 1.0;
@@ -1608,7 +1608,7 @@ namespace SDX_RMC
 			//ぴょんぴょんはねる&戦術効果
 			for (auto& it : 軍団->兵士)
 			{
-				it.攻撃補正 = 50;
+				it.攻撃補正 = 5;
 				it.防御補正 = 0;
 				it.士気変化 = -0.10;
 				it.士気 = CV::最大士気;
