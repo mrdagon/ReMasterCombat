@@ -3,21 +3,31 @@
 #include "stdafx.h"
 
 using namespace SDX;
+#include "System/ConstValue.h"
+#include "System/MCSystem.h"
+#include "System/Material.h"
+#include "System/SaveAndLoad.h"
+#include "System/MCSystem.h"
+#include "Struct/DataS.h"
+#include "System/InitData.h"
+#include "Scene/SceneS.h"
+using namespace SDX_RMC;
 
 int main(int argc, char* argv[])
 {
-	System::Initialise("sample", 640, 480);//ライブラリの初期化
-	int x = 320;
-	int y = 240;
+	System::Initialise("sample", 640, 360);//ライブラリの初期化
 
-	while (System::Update())
-	{
-		if (Input::pad.Down.hold) y += 10;
-		if (Input::pad.Up.hold) y -= 5;
-		if (Input::pad.Right.hold) x += 5;
-		if (Input::pad.Left.hold) x -= 5;
-		Drawing::Rect({ x - 10, y - 10, 20, 20 }, Color::White, true);
-	}
+	//画像と音声の読み込み
+	LoadMaterial();
+	//各種数値の代入、読み込み
+	LoadUnitS();
+	LoadFormationS();
+	LoadTacticsS();
+	
+	SceneBattle テスト;
+	テスト.Init();
+	テスト.Run();
+
 	System::End();//ライブラリの終了処理
 	return 0;
 }
