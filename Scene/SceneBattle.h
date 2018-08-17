@@ -30,6 +30,11 @@ namespace SDX_RMC
 		//操作状態保存
 		bool is戦術選択中 = false;
 
+		//Result用
+		int 終了後時間 = 0;
+		ResultType 戦闘結果;
+		BattleAI 戦術AI;
+
 		const Rect B陣形選択上 = Rect( 320 - 140,100,280,40 );
 		const Rect B陣形選択下 = Rect( 320 - 140,160,280,40 );
 		const Rect B戦闘開始 = Rect( 320 - 100,230,200,40 );
@@ -51,8 +56,21 @@ namespace SDX_RMC
 			//まず両軍の状態を初期化して陣形を選択する
 			処理状態 = BattlePhase::Format;
 			戦闘時間 = 0;
+			終了後時間 = 0;
+			アニメ時間 = 0;
 			明るさ = 0;
 			時間 = 0;
+			戦術AI.Init(&軍団[0], &軍団[1], &天気);
+
+			軍団[0].isAI = false;
+			軍団[1].isAI = true;
+
+
+			軍団[0].兵士.clear();
+			軍団[1].兵士.clear();
+			軍団[0].平均モラル = 100;
+			軍団[1].平均モラル = 100;
+
 			軍団[0].敵軍 = &軍団[1];
 			軍団[1].敵軍 = &軍団[0];
 
@@ -60,50 +78,47 @@ namespace SDX_RMC
 			軍団[1].前進方向 = DirectionType::右;
 			軍団[0].後退方向 = DirectionType::右;
 			軍団[1].後退方向 = DirectionType::左;
-			軍団[0].前進正負 = -1;
-			軍団[1].前進正負 = 1;
-
-			//とりあえず30+1人ずつの軍団でテスト
-			for (int b = 0; b < 2; b++)
-			{
-				for (int a = 0; a < 15; a++)
-				{
-					軍団[b].兵士.push_back(職種基礎ステ[JobType::機動兵]);
-				}
-				for (int a = 0; a < 15; a++)
-				{
-					軍団[b].兵士.push_back(職種基礎ステ[JobType::重装兵]);
-				}
-				for (int a = 0; a < 30; a++)
-				{
-					軍団[b].兵士[a].位置.SetPos(650-b*660, a * 300 / 30);//60～260
-				}
-			}
-			軍団[0].兵士.push_back(職種基礎ステ[JobType::騎士]);
-			軍団[1].兵士.push_back(職種基礎ステ[JobType::勇者]);
-
-			for (int a = 0; a < 2; a++)
-			{
-				軍団[a].兵士.back().is指揮官 = true;
-				軍団[a].兵士.back().位置.SetPos(640*(1-a), 150);
-				軍団[a].指揮官 = &軍団[1].兵士.back();
-			}
-
-			//全軍前進相当
+			//暫定で兵数と指揮官指定
+			軍団[0].指揮官兵種 = JobType::勇者;
+			軍団[0].一般兵種[0] = JobType::機動兵;
+			軍団[0].一般兵種[1] = JobType::重装兵;
+			軍団[0].初期兵数[0] = 30;
+			軍団[0].初期兵数[1] = 30;
+			
+			軍団[1].指揮官兵種 = JobType::騎士;
+			軍団[1].一般兵種[0] = JobType::機動兵;
+			軍団[1].一般兵種[1] = JobType::重装兵;
+			軍団[1].初期兵数[0] = 15;
+			軍団[1].初期兵数[1] = 15;
 			
 			for (int a = 0; a < 2; a++)
 			{
-				for(auto& it:軍団[a].兵士)
+				for (int b = 0; b < 軍団[a].初期兵数[0]; b++)
 				{
-					it.向き = 軍団[a].前進方向;
-					it.攻撃補正 = 2;
-					it.防御補正 = 0;
-					it.士気変化 = -0.05;
-					it.移動速度 = it.機動力  * 0.5;
-					it.is逃走中 = false;
+					軍団[a].兵士.push_back(職種基礎ステ[軍団[a].一般兵種[0]]);
 				}
+				for (int b = 0; b < 軍団[a].初期兵数[1]; b++)
+				{
+					軍団[a].兵士.push_back(職種基礎ステ[軍団[a].一般兵種[1]]);
+				}
+
+				for (int b = 0; b < 軍団[a].初期兵数[0] + 軍団[a].初期兵数[1]; b++)
+				{
+					軍団[a].兵士[b].位置.SetPos(650-a*660, b * 300 / (軍団[a].初期兵数[0] + 軍団[a].初期兵数[1]));//60～260
+				}
+
+				軍団[a].兵士.push_back(職種基礎ステ[軍団[a].指揮官兵種]);
+				軍団[a].兵士.back().is指揮官 = true;
+				軍団[a].兵士.back().位置.SetPos(640*(1-a), 150);
+				軍団[a].指揮官 = &軍団[a].兵士.back();
 			}
 
+			軍団[0].戦術回数[TacticsType::全軍突撃] = 1;
+			軍団[1].戦術回数[TacticsType::全軍突撃] = 1;
+
+			//全軍前進相当の戦術
+			戦術データ[TacticsType::空き]->発動(this, &軍団[0]);
+			戦術データ[TacticsType::空き]->発動(this, &軍団[1]);
 		}
 
 		bool Run()
@@ -120,6 +135,11 @@ namespace SDX_RMC
 		}
 	
 	private:
+		double 座標補正(double Y座標)
+		{
+			return Y座標 * 2/3 + 80;
+		}
+
 		//共通処理
 		void Draw()
 		{
@@ -136,11 +156,17 @@ namespace SDX_RMC
 			//天候描画
 
 			//ダメージ
+			DrawDamage();
 
 			//士気表示-前後 上下、長さ308 616 24
-			//MSystem::モラルバー.Draw({   6, 300 });
-			//MSystem::モラルバー.Draw({ 326, 300 });
+			MSystem::モラルバー.Draw({   6, 300 });
+			MSystem::モラルバー.Draw({ 326, 300 });
+			Rect 左軍モラルゲージ = Rect({ 0,0,int(軍団[1].平均モラル * 3),10 });
+			Rect 右軍モラルゲージ = Rect({ 0,0,int(軍団[0].平均モラル * 3),10 });
 
+			MSystem::モラルゲージ.DrawPart({10,304},左軍モラルゲージ,false);
+			MSystem::モラルゲージ.DrawPart({ 630 - int(軍団[0].平均モラル * 3),304 },右軍モラルゲージ, true);
+			
 			//戦術ボタン
 			//Rect 戦術ボタン = { 2,282,76,76 };
 			//Point 戦術名 = {40,300};
@@ -159,38 +185,54 @@ namespace SDX_RMC
 			{
 				case BattlePhase::Format:DrawFormat();break;
 				case BattlePhase::Combat:DrawCombat(); break;
-				case BattlePhase::Result:break;
+				case BattlePhase::Result:DrawResult(); break;
 			}
 
 		}
 
 		void DrawUnit()
 		{
-			int モーション値 = アニメ時間 / 10 % 3 + 6;
-
 			for (int a = 0; a < 2; a++)
 			{
 				for (auto& it : 軍団[a].兵士)
 				{
+					int モーション値 = アニメ時間 / 10 % 3 + 6;
+
 					if (it.is描画 == false) { continue; }
 
 					const double px = it.位置.x;
-					const double py = (it.位置.y + it.ジャンプ高さ) * 2 / 3 + 80;
+					const double py = 座標補正(it.位置.y + it.ジャンプ高さ);
 					bool is反転 = (it.向き == DirectionType::右);//右に向くように反転
 
 					switch (it.戦闘状態)
 					{
 					case UnitStateType::死亡:
-						if (軍団[a].前進方向 == DirectionType::左)
+
+						if (it.退場時間 > 120) { continue; }
+
+						switch (it.退場時間 /4 %4)
 						{
-
-						} else {
-
+							case 0:モーション値 = 1; break;//上
+							case 1:モーション値 = 7; is反転 = false; break;//左
+							case 2:モーション値 = 4; break;//下
+							case 3:モーション値 = 7; is反転 = true; break;//右
 						}
-						MUnit::ユニット画像[a][it.画像][モーション値]->DrawRotate({ px , py }, 2, 0, is反転);
+
+						MUnit::ユニット画像[a][it.画像][モーション値]->SetColor({255,255,255,128});
+						MUnit::ユニット画像[a][it.画像][モーション値]->DrawRotate({ px + it.退場時間 * 軍団[a].後退方向 , py }, 2, 0, is反転);
+						MUnit::ユニット画像[a][it.画像][モーション値]->SetColor(Color::White);
 						it.退場時間++;
 						continue;
 					case UnitStateType::突破:
+						//ジャンプした後奥に消える
+						if (it.ジャンプ高さ != 0 || it.ジャンプ回数 > 0)
+						{
+							モーション値 = 1;
+						} else {
+							is反転 = (軍団[a].前進方向 == 1);
+							it.位置.x += 軍団[a].前進方向;
+						}
+
 						it.退場時間++;
 						break;
 					}
@@ -260,6 +302,29 @@ namespace SDX_RMC
 			}
 		}
 
+		void DrawDamage()
+		{
+			for (auto& it : ダメージエフェクト)
+			{
+				MFont::白数字[it.ダメージ量]->SetColor(it.描画色);
+				MFont::白数字[it.ダメージ量]->DrawRotate({ it.位置.x,座標補正(it.位置.y) }, 2, 0);
+				//ここで残り時間なども処理する
+				it.残り時間--;
+				it.位置.x += it.移動速度;
+			}
+
+			for (unsigned int a = 0; a < ダメージエフェクト.size(); a++)
+			{
+				if (ダメージエフェクト[a].残り時間 <= 0)
+				{
+					//最後尾のをコピーして削除
+					ダメージエフェクト[a] = ダメージエフェクト.back();
+					ダメージエフェクト.pop_back();
+				}
+			}
+
+		}
+
 		bool Update()
 		{
 			//デバッグ用
@@ -289,7 +354,7 @@ namespace SDX_RMC
 			{
 			case BattlePhase::Format:UpdateFormat(); break;
 			case BattlePhase::Combat:UpdateCombat(); break;
-			case BattlePhase::Result:break;
+			case BattlePhase::Result:return UpdateResult();
 			}
 
 			return true;
@@ -304,10 +369,9 @@ namespace SDX_RMC
 			{
 				Drawing::Rect({ 320 - 150,90,300,120 }, { 0,0,255,64 });
 
-				if (選択陣形 == 0) {
+				if (選択陣形 == 陣形テスト) {
 					Drawing::Rect(B陣形選択上, { 0,0,255,128 });
-				}
-				else {
+				} else {
 					Drawing::Rect(B陣形選択下, { 0,0,255,128 });
 				}
 				Drawing::Rect( B戦闘開始, { 0,0,255,128 });
@@ -335,6 +399,13 @@ namespace SDX_RMC
 			}
 			else
 			{
+				if (Input::key.Right.on) 陣形テスト+= 2;
+				if (Input::key.Left.on) 陣形テスト -= 2;
+				if (陣形テスト < 0) 陣形テスト = 0;
+				if( 陣形テスト >int(FormationType::COUNT)-2) 陣形テスト = int(FormationType::COUNT) - 2;
+
+
+
 				//その後陣形選択画面
 				//陣形選択ウィンドウを表示
 				//陣形に整列、陣形を変更するとアニメーションしながら位置変更
@@ -360,14 +431,13 @@ namespace SDX_RMC
 						//描画順が正しくなるように並び変え
 						auto 並び式 = [](const UnitData& a, const UnitData& b)->bool 
 						{
-							if (a.is指揮官 || b.is指揮官) { return false; }
-							return (a.位置.GetY() < b.位置.GetY()); 
+							if ( a.is指揮官 ) { return (a.位置.GetY()+1000 < b.位置.GetY()); }
+							if ( b.is指揮官) { return (a.位置.GetY() < b.位置.GetY() + 1000); }
+							return (a.位置.GetY() < b.位置.GetY());
 						};
 
 						std::sort(軍団[0].兵士.begin(), 軍団[0].兵士.end(), 並び式 );
 						std::sort(軍団[1].兵士.begin(), 軍団[1].兵士.end(), 並び式 );
-						軍団[0].Set指揮官();
-						軍団[1].Set指揮官();
 
 						処理状態 = BattlePhase::Combat;
 					}
@@ -412,21 +482,18 @@ namespace SDX_RMC
 
 		void UpdateCombat()
 		{
-			//AI戦術選択
-			TacticsAI();
 			//操作処理
 			PlayerInput();
 
-			//戦術選択中は戦闘処理等をスキップ
-			if (is戦術選択中 == true)
-			{
-				return;
-			}
+			//戦術選択中は操作以外の処理等をスキップ
+			if (is戦術選択中 == true) { return; }
 
-			//
+			//基本処理
 			戦闘時間++;
-
-			//ユニットの更新
+			天気継続時間--;
+			if (天気継続時間 <= 0){天気 = WeatherType::晴れ;}
+			//ユニットと軍団の更新
+			UpdateLegion();
 			UpdateUnit();
 			//オブジェクトの更新
 			UpdateObject();
@@ -434,8 +501,27 @@ namespace SDX_RMC
 			HitUnit();
 			//戦術効果
 			TacticsEffect();
+			//敵AI処理
+			TacticsAI();
+			//戦闘終了判定
+			if (軍団[0].活動兵士数 <= 0 || 軍団[1].活動兵士数 <= 0)
+			{
+				Result計算();
+				処理状態 = BattlePhase::Result;
+			}
+
 		}
 		
+		void UpdateLegion()
+		{
+			for (int a = 0; a < 2; a++)
+			{
+				//軍団更新
+				軍団[a].is指揮官生存 = (軍団[a].指揮官->戦闘状態 == UnitStateType::戦闘中 || 軍団[a].指揮官->戦闘状態 == UnitStateType::突破);
+				軍団[a].前回戦術経過時間++;
+			}
+		}
+
 		void UpdateUnit()
 		{
 			for(int a=0;a<2;a++)
@@ -444,7 +530,7 @@ namespace SDX_RMC
 				{
 					if (it.戦闘状態 != UnitStateType::戦闘中) { continue; }
 
-					double 移動補正 = 軍団[a].前進正負;
+					double 移動補正 = 軍団[a].前進方向;
 					//天候効果
 					switch (天気)
 					{
@@ -518,6 +604,7 @@ namespace SDX_RMC
 						it.位置.x > CV::戦場右端 && 軍団[a].前進方向 == DirectionType::右 )
 					{
 						it.戦闘状態 = UnitStateType::突破;
+						it.ジャンプ回数 = 3;
 						it.退場時間 = 0;
 					}
 					//逃走、衝突判定
@@ -603,13 +690,13 @@ namespace SDX_RMC
 				}
 
 				//指揮官死亡デバフ
-				if (軍団[a].is指揮官生存 = false)
+				if (軍団[a].is指揮官生存 == false)
 				{
 					攻撃[a] -= 1; 
 					防御[a] -= 1;
 				}
 				//天気補正
-				if (天気継続時間 > 0 && 天気 == WeatherType::雨)
+				if (天気 == WeatherType::雨)
 				{
 					if(兵士[a]->雨耐性 <= 0)
 					{
@@ -622,7 +709,7 @@ namespace SDX_RMC
 						防御[a] -= 1;
 					}
 				}
-				if (天気継続時間 > 0 && 天気 == WeatherType::雪 )
+				if (天気 == WeatherType::雪 )
 				{
 					if (兵士[a]->雪耐性 <= 0)
 					{
@@ -653,7 +740,7 @@ namespace SDX_RMC
 					int ダメージ = int(兵士[a]->蓄積ダメージ);
 					兵士[a]->部隊数 -= ダメージ;
 					兵士[a]->蓄積ダメージ -= ダメージ;
-					AddDamageEffect(ダメージ, a, 兵士[a]->位置);
+					AddDamageEffect(ダメージ, 軍団[a].前進方向, 兵士[a]->位置);
 				}
 
 			}
@@ -680,7 +767,13 @@ namespace SDX_RMC
 
 		void AddDamageEffect(int ダメージ量,int 軍,Point& 座標)
 		{
-
+			//文字の進行方向は前進方向の逆
+			if (軍 == 1)
+			{
+				ダメージエフェクト.push_back(DamageEffectData(座標, ダメージ量,-1, Color::Blue));
+			} else {
+				ダメージエフェクト.push_back(DamageEffectData(座標, ダメージ量,1, Color::Red));
+			}
 		}
 
 		void TacticsEffect()
@@ -750,37 +843,178 @@ namespace SDX_RMC
 
 		void TacticsAI()
 		{
-
-		}
-		//●AIサブ処理
-		void AI計算()
-		{
-			//平均モラル<-TacticsEffect()関数で計算
-			//前後列平均位置<-TacticsEffect()関数で計算
-			//上翼,下翼,前列,後列割合計算
-
-			//交戦中チェック
-			//分断チェック
-			//最後尾位置計算
-			//交戦中部隊モラル計算
-			//ダメージ計算予測
-			//火による分断
-		}
-		
-		void AIダメージ予測()
-		{
+			戦術AI.基本計算();
+			for (int a = 0; a < 2; a++)
+			{
+				if (軍団[a].isAI)
+				{
+					TacticsType 選択戦術 = 戦術AI.戦術選択(a);
+					if (選択戦術 == TacticsType::空き) { continue; }
+					戦術データ[選択戦術]->発動(this, &軍団[a]);
+				}
+			}
 		}
 
-		void AI個別戦術選択()
-		{
-			
-		}
-		
-		void AI基本戦術選択()
-		{
-
-
-		}
 		//■■EndCombat■■
+		void Result計算()
+		{
+			//勝った軍、戦闘評価などの計算
+			for (int a = 0; a < 2; a++)
+			{
+				軍団[a].状態別兵数[UnitStateType::戦闘中] = 0;
+				軍団[a].状態別兵数[UnitStateType::死亡] = 0;
+				軍団[a].状態別兵数[UnitStateType::退却] = 0;
+				軍団[a].状態別兵数[UnitStateType::突破] = 0;
+				for (auto& it : 軍団[a].兵士)
+				{
+					if (it.戦闘状態 == UnitStateType::戦闘中)
+					{
+						軍団[a].状態別兵数[UnitStateType::突破]++;
+					}
+					軍団[a].状態別兵数[it.戦闘状態]++;
+				}
+			}
+			//両軍全滅
+			if (軍団[0].状態別兵数[UnitStateType::突破] == 0 && 軍団[0].状態別兵数[UnitStateType::突破] == 1)
+			{
+				戦闘結果 = ResultType::両軍互角;
+				return;
+			}
+			//全滅敗北、退却敗北
+			if (軍団[0].状態別兵数[UnitStateType::突破] == 0)
+			{
+				if (軍団[0].状態別兵数[UnitStateType::退却] > 0)
+				{
+					戦闘結果 = ResultType::自軍退却;
+				} else {
+					戦闘結果 = ResultType::自軍全滅;
+				}
+				return;
+			}
+			//全滅勝利、全滅敗北
+			if (軍団[1].状態別兵数[UnitStateType::突破] == 0)
+			{
+				if (軍団[1].状態別兵数[UnitStateType::退却] > 0)
+				{
+					戦闘結果 = ResultType::敵軍退却;
+				}
+				else {
+					戦闘結果 = ResultType::敵軍全滅;
+				}
+				return;
+			}
+			//両方突破数1以上、生き残り勝負
+			if (軍団[0].状態別兵数[UnitStateType::突破] > 軍団[1].状態別兵数[UnitStateType::突破])
+			{
+				戦闘結果 = ResultType::自軍優勢;
+			}
+			else if (軍団[0].状態別兵数[UnitStateType::突破] < 軍団[1].状態別兵数[UnitStateType::突破])
+			{
+				戦闘結果 = ResultType::敵軍優勢;
+			}
+			else
+			{
+				戦闘結果 = ResultType::両軍互角;
+			}
+		}
+
+		void DrawResult()
+		{
+			std::string テキスト;
+			//戦闘結果表示
+			if (終了後時間 > 60)
+			{
+				switch (戦闘結果)
+				{
+					case ResultType::敵軍全滅:テキスト = "敵軍全滅"; break;
+					case ResultType::敵軍退却:テキスト = "敵軍退却"; break;
+					case ResultType::敵軍優勢:テキスト = "敵軍優勢"; break;
+					case ResultType::自軍全滅:テキスト = "自軍全滅"; break;
+					case ResultType::自軍退却:テキスト = "自軍退却"; break;
+					case ResultType::自軍優勢:テキスト = "自軍優勢"; break;
+					case ResultType::両軍全滅:テキスト = "両軍全滅"; break;
+					case ResultType::両軍互角:テキスト = "引き分け"; break;
+				}
+				MFont::ゴシック大.DrawRotate({ 320,160 }, 1, 0, Color::White, テキスト);
+			}
+			
+
+		}
+
+		bool UpdateResult()
+		{
+			//最初に全軍消えるまで走らせる
+			if (終了後時間 == 0)
+			{
+				bool is全員脱出 = true;
+				for (int a = 0; a < 2; a++)
+				{
+					for (auto& it : 軍団[a].兵士)
+					{
+						if (it.戦闘状態 == UnitStateType::戦闘中 || it.戦闘状態 == UnitStateType::突破)
+						{
+							it.位置.x += 軍団[a].前進方向 * 4;
+							if (it.位置.x > -20 && it.位置.x < 660) { is全員脱出 = false; }
+						}
+					}
+				}
+
+				if (is全員脱出 == false)
+				{
+					return true;
+				}
+			}
+			終了後時間++;
+			if (終了後時間 == 1)
+			{
+				//指揮官と護衛二人追加、戦闘結果計算
+				for (int a = 0; a < 2; a++)
+				{
+					軍団[a].兵士.clear();
+					軍団[a].兵士.push_back(職種基礎ステ[軍団[a].一般兵種[0]]);
+					軍団[a].兵士.push_back(職種基礎ステ[軍団[a].一般兵種[1]]);
+					軍団[a].兵士.push_back(職種基礎ステ[軍団[a].指揮官兵種]);
+				}
+				軍団[0].兵士[0].位置.SetPos(680, 150);
+				軍団[0].兵士[1].位置.SetPos(680, 170);
+				軍団[0].兵士[2].位置.SetPos(660, 160);
+
+				軍団[1].兵士[0].位置.SetPos(-40, 150);
+				軍団[1].兵士[1].位置.SetPos(-40, 170);
+				軍団[1].兵士[2].位置.SetPos(-20, 160);
+
+				for (int a = 0; a < 2; a++)
+				{
+					for (auto& it : 軍団[a].兵士)
+					{
+						it.向き = 軍団[a].前進方向;
+					}
+				}
+			}
+			//指揮官＋兵隊がダッシュ
+			if (終了後時間 < 60)
+			{
+				for (int a = 0; a < 2; a++)
+				{
+					for (auto& it : 軍団[a].兵士)
+					{
+						it.位置.x += 軍団[a].前進方向 * 4;
+					}
+				}
+			}
+			//画面を暗くしてフィードアウト
+			if (終了後時間 > 180 && 明るさ > 0)
+			{
+				明るさ = std::max(0, 明るさ - 5);
+			}
+
+			if (終了後時間 > 300)
+			{
+				return false;
+			}
+
+
+			return true;//戦闘終了
+		}
 	};
 }

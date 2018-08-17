@@ -22,9 +22,12 @@ namespace SDX_RMC
 		int 戦闘時間 = 0;
 		int 編成時間 = 0;
 
-		//火
-		//落とし穴
-		//柵
+		//オブジェクト
+		std::vector<FireData> 火炎;
+		std::vector<HoleData> 落とし穴;
+		std::vector<FenceData> 防御柵;
+		std::vector<DamageEffectData> ダメージエフェクト;
+
 		//ダメージエフェクト
 		virtual void Draw(int 描画時間) = 0;
 

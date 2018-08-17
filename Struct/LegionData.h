@@ -15,12 +15,15 @@ namespace SDX_RMC
 		UnitData* 指揮官;
 		FormationType 陣形;
 		TacticsType 戦術[8];
-		EnumArray<int,TacticsType> 残り戦術回数;//AIの都合上装備してない戦術も残り使用数をカウント
+		EnumArray<int,TacticsType> 戦術回数;//AIの都合上装備してない戦術も残り使用数をカウント
 		TacticsType 現在戦術;//補助戦術使用時は変化しない場合あり
-		DirectionType 前進方向;
+		DirectionType 前進方向;//前進する時の向き -1が左向き、1が右向き
 		DirectionType 後退方向;
-		int 前進正負;//前進する時の向き 1が左向き、-1が右向き
 		LegionData* 敵軍;
+
+		JobType 指揮官兵種;
+		JobType 一般兵種[2];
+		int 初期兵数[2];
 
 		bool is交代前進;//交代中-後列が前列位置へ
 		bool is交代後退;//交代中-前列が後列位置へ
@@ -36,22 +39,26 @@ namespace SDX_RMC
 		TacticsType 発動待ち戦術;
 		int 発動待ち時間;
 		int 発動待ち最大;
+		//戦闘結果用
+		EnumArray<int, UnitStateType> 状態別兵数;
 
 		//AI用パラメータ
+		TacticsBattleType 戦闘態勢;
 		bool isAI = false;
 		double 平均モラル;
 		EnumArray<double,RowType> 列平均モラル;
+		double AIモラル;//AIが認識するモラル
 		int 火災時間;
 		EnumArray<double, RowType> 列人数;
 		EnumArray<double, RowType> 列人数割合;//0.0～1.0
 		double 上翼割合;
 		double 下翼割合;
 
-		double 平均位置;//X座標
+		double 平均位置;
 		EnumArray<double, RowType> 列平均位置;
-		double 最前線位置;
-		double 最後尾位置;
-		bool is交戦;
+		double 最前線位置;//自軍側画面端からの距離
+		double 最後尾位置;//自軍側画面端からの距離
+		RowType 戦闘列;//前列or後列のどちらが前か
 		bool is分断判定;//死んだフリ,分断作戦による
 
 		double 与ダメ予測値;//被ダメは敵軍のを参照する
@@ -157,10 +164,23 @@ namespace SDX_RMC
 			if (列人数[RowType::後列] > 0) { 列平均位置[RowType::後列] /= 列人数[RowType::後列]; }
 			平均位置 /= 列人数[RowType::前列] + 列人数[RowType::後列];
 
-			//左側(初期進行方向＝右)の軍は最前と最後尾を交換
-			if (前進方向 == DirectionType::右)
+			if (列平均位置[RowType::前列] < 列平均位置[RowType::後列])
 			{
-				std::swap(最前線位置, 最後尾位置);
+				戦闘列 = RowType::前列;
+			} else {
+				戦闘列 = RowType::後列;
+			}
+
+			//右側(前進方向＝左)の軍は最前と最後尾を交換等
+			if (前進方向 == DirectionType::左)
+			{
+				//前に出てる列が反対に
+				if (戦闘列 == RowType::前列) { 戦闘列 = RowType::後列; }
+				else { 戦闘列 = RowType::前列; }
+
+				double buff = 最前線位置;
+				最前線位置 = 640 - 最後尾位置;
+				最後尾位置 = 640 - buff;				
 			}
 		}
 	};

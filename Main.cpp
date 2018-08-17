@@ -24,9 +24,12 @@ int main(int argc, char* argv[])
 	LoadFormationS();
 	LoadTacticsS();
 	
-	SceneBattle テスト;
-	テスト.Init();
-	テスト.Run();
+	while (System::ProcessMessage())
+	{
+		SceneBattle テスト;
+		テスト.Init();
+		テスト.Run();
+	}
 
 	System::End();//ライブラリの終了処理
 	return 0;

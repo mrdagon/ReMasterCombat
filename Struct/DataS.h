@@ -9,3 +9,4 @@
 #include "AreaData.h"
 #include "BattleData.h"
 #include "TacticsData.h"
+#include "BattleAI.h"

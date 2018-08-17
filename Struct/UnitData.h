@@ -88,22 +88,52 @@ namespace SDX_RMC
 
 	};
 
-	struct FireData
+	class FireData
 	{
+	public:
 		Point 位置;
 		int 残り時間;
 		double 移動速度;
 	};
 
-	struct HoleData
+	class HoleData
 	{
+	public:
 		Point 位置;
 	};
 
-	struct FenceData
+	class FenceData
 	{
+	public:
 		Point 位置;
 		double 残り耐久;
+	};
+
+	class DamageEffectData
+	{
+	public:
+		DamageEffectData()
+		{}
+
+		DamageEffectData(const Point& 位置,int ダメージ量, int 移動速度 ,const  Color &描画色)
+		{
+			this->位置 = 位置;
+			if (ダメージ量 >= 10)
+			{
+				this->ダメージ量 = 0;
+			} else {
+				this->ダメージ量 = ダメージ量;
+			}
+			this->描画色 = 描画色;
+			this->移動速度 = 移動速度;
+			残り時間 = CV::ダメージ表示時間;
+		}
+
+		Point 位置;
+		int 残り時間;
+		int ダメージ量;
+		int 移動速度;
+		Color 描画色 = Color::Red;
 	};
 
 	EnumArray<UnitData, JobType> 職種基礎ステ;//この数値を初期化時に代入する

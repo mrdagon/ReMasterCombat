@@ -10,12 +10,12 @@ namespace SDX_RMC
 	{
 	public:
 		TacticsType 戦術種;
+		TacticsBattleType 戦闘態勢;//攻撃or防御or回復
 		std::string 戦術名;
 		std::string 説明文;
 		int 使用可能回数;//無限に使える回数はConstValue.hで定義
 		bool is単列使用可 = true;
 		bool is複列使用可 = true;
-		bool is攻防変化 = true;//現在戦術を変えるかどうか,AI用
 
 		//singletonクラスの様な感じに
 		template<typename T>
@@ -30,23 +30,32 @@ namespace SDX_RMC
 		{
 			//共通処理
 			軍団->前回戦術経過時間 = 0;
-			if (is攻防変化 == true)
-			{
-				軍団->発動待ち戦術 = 戦術種;
-			}
 			軍団->発動待ち時間 = 0;
 			軍団->is交代前進 = false;
 			軍団->is交代後退 = false;
 			軍団->陣形回復残り時間 = 0;
 			軍団->現在戦術 = 戦術種;
+			if (戦闘態勢 != TacticsBattleType::その他)
+			{
+				軍団->戦闘態勢 = 戦闘態勢;
+			}
+
+			if (軍団->戦術回数[戦術種] < CV::戦術回数無限)
+			{
+				軍団->戦術回数[戦術種]--;
+			}
 			//個別処理
 			発動効果(戦場, 軍団);
 		};
 	
 		virtual void 時間差効果(ISceneBattele* 戦場, LegionData* 軍団){}
 
-		void Set性能(int 使用回数, bool is単列, bool is複列, bool 攻防変化)
+		void Set性能(int 使用回数, bool is単列, bool is複列, TacticsBattleType 戦闘態勢)
 		{
+			this->使用可能回数 = 使用回数;
+			this->is単列使用可 = is単列;
+			this->is複列使用可 = is複列;
+			this->戦闘態勢 = 戦闘態勢;
 
 		}
 	
@@ -64,7 +73,20 @@ namespace SDX_RMC
 	private:
 		void 発動効果(ISceneBattele* 戦場, LegionData* 軍団) override
 		{
-			//使用不可能＆効果なし
+			//通常使用不可能
+			//戦闘開始時の効果
+			for (auto& it : 軍団->兵士)
+			{
+				it.攻撃補正 = 2;
+				it.防御補正 = 0;
+				it.向き = 軍団->前進方向;
+				it.士気変化 = -0.05;
+				it.移動速度 = it.機動力  * 0.5;
+				it.フラッシュ時間 = 50;
+				it.フラッシュ色 = Color::Red;
+				it.is逃走中 = false;
+			}
+			軍団->現在戦術 = TacticsType::全軍前進;
 		};
 
 	};
@@ -1571,7 +1593,7 @@ namespace SDX_RMC
 			
 		};
 	};
-	class T超高速デルタ : public ITactics
+	class T疾風怒涛 : public ITactics
 	{
 	private:
 		void 発動効果(ISceneBattele* 戦場, LegionData* 軍団) override
@@ -1706,7 +1728,7 @@ namespace SDX_RMC
 		戦術データ[TacticsType::ナラクの風] = &Singleton<Tナラクの風>::Get();
 		戦術データ[TacticsType::大熱波] = &Singleton<T大熱波>::Get();
 		戦術データ[TacticsType::大あまごい] = &Singleton<T大あまごい>::Get();
-		戦術データ[TacticsType::超高速デルタ] = &Singleton<T超高速デルタ>::Get();
+		戦術データ[TacticsType::疾風怒涛] = &Singleton<T疾風怒涛>::Get();
 		戦術データ[TacticsType::大地震] = &Singleton<T大地震>::Get();
 		//戦術種代入
 		for (int a = 0; a < (int)TacticsType::COUNT; a++)
@@ -1771,68 +1793,68 @@ namespace SDX_RMC
 		戦術データ[TacticsType::ナラクの風]->Set説明("ナラクの風","");
 		戦術データ[TacticsType::大熱波]->Set説明("大熱波","");
 		戦術データ[TacticsType::大あまごい]->Set説明("大あまごい","");
-		戦術データ[TacticsType::超高速デルタ]->Set説明("超高速デルタ","");
+		戦術データ[TacticsType::疾風怒涛]->Set説明("疾風怒涛","");
 		戦術データ[TacticsType::大地震]->Set説明("大地震","");
 
-		戦術データ[TacticsType::空き]->Set性能(CV::戦術回数無限, true, true, false);
-		戦術データ[TacticsType::全軍前進]->Set性能(CV::戦術回数無限, true, true, true);
-		戦術データ[TacticsType::全軍後退]->Set性能(CV::戦術回数無限, true, true, true);
-		戦術データ[TacticsType::全軍防御]->Set性能(CV::戦術回数無限, true, true, true);
-		戦術データ[TacticsType::全軍突撃]->Set性能(CV::戦術回数無限, true, true, true);
-		戦術データ[TacticsType::全軍退却]->Set性能(CV::戦術回数無限, true, true, true);
-		戦術データ[TacticsType::前列前進]->Set性能(CV::戦術回数無限,false, true, true);
-		戦術データ[TacticsType::後列前進]->Set性能(CV::戦術回数無限,false, true, true);
-		戦術データ[TacticsType::速攻前進]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::強撃前進]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::上翼攻撃]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::下翼攻撃]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::全軍前進･強]->Set性能(2, true, true, true);
-		戦術データ[TacticsType::全軍休息]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::速攻後退]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::後退攻撃]->Set性能(3, true, true, true);
-		戦術データ[TacticsType::後退防御]->Set性能(3, true, true, true);
-		戦術データ[TacticsType::前列防御]->Set性能(CV::戦術回数無限,false, true, true);
-		戦術データ[TacticsType::後列後退]->Set性能(CV::戦術回数無限,false, true, true);
-		戦術データ[TacticsType::前列死守]->Set性能(2,false, true, true);
-		戦術データ[TacticsType::全軍防御･強]->Set性能(2, true, true, true);
-		戦術データ[TacticsType::前列突撃]->Set性能(1,false, true, true);
-		戦術データ[TacticsType::後列突撃]->Set性能(1,false, true, true);
-		戦術データ[TacticsType::上翼突撃]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::下翼突撃]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::指揮官突撃]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::前列交代]->Set性能(CV::戦術回数無限, false, true, true);
-		戦術データ[TacticsType::速攻交代]->Set性能(3, false, true, true);
-		戦術データ[TacticsType::統率回復･弱]->Set性能(3, true, true, false);
-		戦術データ[TacticsType::統率回復･強]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::陣形回復]->Set性能(3, true, true, true);
-		戦術データ[TacticsType::陣形回復･速]->Set性能(2, true, true, true);
-		戦術データ[TacticsType::速攻退却]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::死んだフリ]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::雨ごい]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::冬将軍]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::分断作戦]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::爆裂部隊]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::火攻め]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::おとり作戦]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::穴掘り作戦]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::防柵作戦]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::水際作戦]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::背火の計]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::戦場の風]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::情報操作L1]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::情報操作L2]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::情報操作L3]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::情報操作L4]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::情報操作L5]->Set性能(1, true, true, false);
-		戦術データ[TacticsType::投石部隊]->Set性能(CV::戦術回数無限, true, true, false);
-		戦術データ[TacticsType::信じる者達]->Set性能(4, true, true, true);
-		戦術データ[TacticsType::生命回復]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::ｽﾗｲﾑﾌｨｰﾊﾞｰ]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::ナラクの風]->Set性能(1, true, true, true);
-		戦術データ[TacticsType::大熱波]->Set性能(2, true, true, true);
-		戦術データ[TacticsType::大あまごい]->Set性能(2, true, true, false);
-		戦術データ[TacticsType::超高速デルタ]->Set性能(2, true, true, true);
-		戦術データ[TacticsType::大地震]->Set性能(2, true, true, false);
+		戦術データ[TacticsType::空き]->Set性能(CV::戦術回数無限, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::全軍前進]->Set性能(CV::戦術回数無限, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::全軍後退]->Set性能(CV::戦術回数無限, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::全軍防御]->Set性能(CV::戦術回数無限, true, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::全軍突撃]->Set性能(CV::戦術回数無限, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::全軍退却]->Set性能(CV::戦術回数無限, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::前列前進]->Set性能(CV::戦術回数無限,false, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::後列前進]->Set性能(CV::戦術回数無限,false, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::速攻前進]->Set性能(4, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::強撃前進]->Set性能(4, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::上翼攻撃]->Set性能(4, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::下翼攻撃]->Set性能(4, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::全軍前進･強]->Set性能(2, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::全軍休息]->Set性能(4, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::速攻後退]->Set性能(4, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::後退攻撃]->Set性能(3, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::後退防御]->Set性能(3, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::前列防御]->Set性能(CV::戦術回数無限,false, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::後列後退]->Set性能(CV::戦術回数無限,false, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::前列死守]->Set性能(2,false, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::全軍防御･強]->Set性能(2, true, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::前列突撃]->Set性能(1,false, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::後列突撃]->Set性能(1,false, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::上翼突撃]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::下翼突撃]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::指揮官突撃]->Set性能(1, true, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::前列交代]->Set性能(CV::戦術回数無限, false, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::速攻交代]->Set性能(3, false, true, TacticsBattleType::防御);
+		戦術データ[TacticsType::統率回復･弱]->Set性能(3, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::統率回復･強]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::陣形回復]->Set性能(3, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::陣形回復･速]->Set性能(2, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::速攻退却]->Set性能(4, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::死んだフリ]->Set性能(1, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::雨ごい]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::冬将軍]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::分断作戦]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::爆裂部隊]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::火攻め]->Set性能(1, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::おとり作戦]->Set性能(1, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::穴掘り作戦]->Set性能(1, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::防柵作戦]->Set性能(1, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::水際作戦]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::背火の計]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::戦場の風]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::情報操作L1]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::情報操作L2]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::情報操作L3]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::情報操作L4]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::情報操作L5]->Set性能(1, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::投石部隊]->Set性能(CV::戦術回数無限, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::信じる者達]->Set性能(4, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::生命回復]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::ｽﾗｲﾑﾌｨｰﾊﾞｰ]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::ナラクの風]->Set性能(1, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::大熱波]->Set性能(2, true, true, TacticsBattleType::回復);
+		戦術データ[TacticsType::大あまごい]->Set性能(2, true, true, TacticsBattleType::その他);
+		戦術データ[TacticsType::疾風怒涛]->Set性能(2, true, true, TacticsBattleType::攻撃);
+		戦術データ[TacticsType::大地震]->Set性能(2, true, true, TacticsBattleType::その他);
 
 	}
 }

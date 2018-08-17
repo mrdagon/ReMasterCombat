@@ -188,8 +188,18 @@ namespace SDX_RMC
 		ナラクの風,
 		大熱波,
 		大あまごい,
-		超高速デルタ,
+		疾風怒涛,
 		大地震,
+		COUNT
+	};
+
+	//戦術属性
+	enum class TacticsBattleType
+	{
+		攻撃,
+		防御,
+		回復,
+		その他,
 		COUNT
 	};
 
@@ -289,12 +299,25 @@ namespace SDX_RMC
 		COUNT
 	};
 
-	//方向
-	enum class DirectionType
+	//戦闘結果
+	enum class ResultType
 	{
-		右,
-		左,
+		敵軍全滅,
+		敵軍退却,
+		敵軍優勢,
+		自軍全滅,
+		自軍退却,
+		自軍優勢,
+		両軍全滅,
+		両軍互角,
 		COUNT
+	};
+
+	//方向
+	enum DirectionType
+	{
+		右 =  1,
+		左 = -1,
 	};
 	//感情噴き出しタイプ
 	enum class EmoteType

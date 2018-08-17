@@ -151,6 +151,7 @@ namespace SDX_RMC
 		ImagePack 陣形;
 		ImagePack 道具;
 		Image モラルバー;
+		Image モラルゲージ;
 		Image 吹き出し;
 		Image 穴;
 		ImagePack 火;
@@ -166,6 +167,7 @@ namespace SDX_RMC
 			陣形.Load("image/system/formation.png", 6, 3, 2);
 			道具.Load("image/system/item.png", 15, 5, 3);
 			モラルバー.Load("image/system/moralbar.png");
+			モラルゲージ.Load("image/system/moral.png");
 			吹き出し.Load("image/system/hukidasi.png");
 			穴.Load("image/system/ana.png");
 			火.Load("image/system/fire.png",4,4,1);
@@ -181,21 +183,21 @@ namespace SDX_RMC
 		Font ゴシック小;
 		Font ゴシック大;
 		Font 数字;
+		ImagePack 白数字;
 
 		static void Load()
 		{
 
 			static Image ゴシック12;
 			static Image ゴシック16;
-			static ImagePack 白数字画像;
-			白数字画像.Load("font/number.png", 10, 10, 1);
+			白数字.Load("font/number.png", 10, 10, 1);
 			ゴシック12.Load("font/12.png");
 			ゴシック16.Load("font/16.png");
 
 			ゴシック小.LoadBMPFont(ゴシック12, "font/bmp_font_list.txt");
 			ゴシック大.LoadBMPFont(ゴシック16, "font/bmp_font_list.txt");
 			数字.Load("", 3, 0);
-			数字.SetImageS("0", &白数字画像 , 10);
+			数字.SetImageS("0", &白数字 , 10);
 
 		}
 	}

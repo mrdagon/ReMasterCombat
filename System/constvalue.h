@@ -26,6 +26,8 @@ namespace SDX_RMC
 
 		constexpr double 戦場左端 = 16.0;
 		constexpr double 戦場右端 = 624.0;
+
+		constexpr int ダメージ表示時間 = 60;
 		//陣形
 		//戦術
 		constexpr double 交代閾値 = 10.0;
